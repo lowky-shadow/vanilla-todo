@@ -4,6 +4,7 @@
   "description": "Production-quality Vanilla JS Todo app with modular code, tests, CI, and deployment.",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\"",
     "prepare": "husky"
   },
