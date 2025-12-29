@@ -1,0 +1,21 @@
+{
+  "name": "vanilla-todo",
+  "version": "1.0.0",
+  "description": "Production-quality Vanilla JS Todo app with modular code, tests, CI, and deployment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\"",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "vitest": "^4.0.16"
+  }
+}
