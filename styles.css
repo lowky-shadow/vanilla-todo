@@ -1,0 +1,16 @@
+body {
+  font-family: system-ui, sans-serif;
+  padding: 40px;
+  background-color:aqua
+}
+
+form {
+  margin-bottom: 20px;
+  background-color: aquamarine;
+}
+
+li {
+  margin: 6px 0;
+  background-color: red;
+  padding: 6px;
+}
