@@ -6,6 +6,7 @@ export const addTodo = (todos, input) => {
     text: input,
     completed: false,
     createdAt: Date.now(),
+    editing:false,
   };
   todos.push(todo);
 };
@@ -13,3 +14,16 @@ export const addTodo = (todos, input) => {
 export const deleteTodo = (todos,idToDelete) => {
   return todos.filter((todo) => todo.id !== idToDelete);
 };
+
+
+export const editTodo = (todos,idToEdit,input) =>{
+  return todos.map((todo) =>{
+    if(todo.id !== idToEdit) return todo;
+
+    return {
+      ...todo,
+      text:input,
+      editing:false,
+    }
+  })
+}
