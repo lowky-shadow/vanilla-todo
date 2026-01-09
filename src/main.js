@@ -1,59 +1,56 @@
 import { renderUi } from "./renderUi.js";
-import { addTodo,deleteTodo, editTodo } from "./todoLogic.js";
+import { loadTodoFromMemory } from "./storage.js";
+import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
 
 const main = async () => {
   let todos = [];
-  
+
   let list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
 
- const callRenderUi = ()=>{
-  renderUi(todos,list);
- }
+  loadTodoFromMemory(todos);
+
+  const callRenderUi = () => {
+    renderUi(todos, list);
+  };
+  callRenderUi();
 
   list.addEventListener("click", (e) => {
     if (e.target.tagName !== "BUTTON") return;
 
-    if(e.target.classList.contains("delete")){
+    if (e.target.classList.contains("delete")) {
       const idToDelete = e.target.dataset.id;
-      todos = deleteTodo(todos,idToDelete);
-
-    }
-    else if(e.target.classList.contains("edit")){
+      todos = deleteTodo(todos, idToDelete);
+    } else if (e.target.classList.contains("edit")) {
       const idToEdit = e.target.dataset.id;
-      
+
       const todo = todos.find((t) => t.id === idToEdit);
       todos.forEach((t) => (t.editing = false));
-      if (todo ) {
+      if (todo) {
         todo.editing = true;
       }
-      console.log(todo.editing);
       callRenderUi();
-    }
-    else{
+    } else {
       return;
     }
-     callRenderUi();
+    callRenderUi();
   });
 
-  list.addEventListener("keydown",(e)=>{
-    if(e.key !== "Enter" || e.target.tagName !== "INPUT") return;
+  list.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
 
     const idToEdit = e.target.dataset.id;
     const editInput = e.target.value.trim();
-    if(!editInput) return;
+    if (!editInput) return;
 
-     todos = editTodo(todos, idToEdit, editInput);
-    console.log(e.target.value);
-     callRenderUi();
-    console.log(e.target.value);
-    
-  })
+    todos = editTodo(todos, idToEdit, editInput);
+    callRenderUi();
+  });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const input = e.target.todo.value.trim();
-    addTodo(todos,input);
+    addTodo(todos, input);
     callRenderUi();
     e.target.reset();
   });
