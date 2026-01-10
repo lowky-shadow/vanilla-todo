@@ -1,5 +1,5 @@
 import { renderUi } from "./renderUi.js";
-import { loadTodoFromMemory } from "./storage.js";
+import {  loadTodoLocal, saveTodoLocal } from "./storage.js";
 import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
 
 const main = async () => {
@@ -8,8 +8,12 @@ const main = async () => {
   let list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
 
-  loadTodoFromMemory(todos);
+  //load todos from localstorage
+  todos = loadTodoLocal();
 
+  //sorting the todos before rendering
+  todos.sort((a, b) => a.createdAt - b.createdAt);
+  
   const callRenderUi = () => {
     renderUi(todos, list);
   };
@@ -21,6 +25,9 @@ const main = async () => {
     if (e.target.classList.contains("delete")) {
       const idToDelete = e.target.dataset.id;
       todos = deleteTodo(todos, idToDelete);
+
+      //saving todos local after delete
+      saveTodoLocal(todos);
     } else if (e.target.classList.contains("edit")) {
       const idToEdit = e.target.dataset.id;
 
@@ -29,7 +36,6 @@ const main = async () => {
       if (todo) {
         todo.editing = true;
       }
-      callRenderUi();
     } else {
       return;
     }
@@ -44,15 +50,26 @@ const main = async () => {
     if (!editInput) return;
 
     todos = editTodo(todos, idToEdit, editInput);
+
+    //save todos locally after edit
+    saveTodoLocal(todos);
     callRenderUi();
   });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const input = e.target.todo.value.trim();
+
+    if (input.length > 20) {
+      alert("Todo must be less than 20 characters");
+      return;
+    }
     addTodo(todos, input);
+
+    //save todos locally after new todo
+    saveTodoLocal(todos);
     callRenderUi();
     e.target.reset();
   });
-};
+};;
 main();

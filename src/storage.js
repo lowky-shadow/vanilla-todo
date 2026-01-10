@@ -1,22 +1,18 @@
-export const storeTodoInMemory = (todo) => {
-  localStorage.setItem(JSON.stringify(todo.id), JSON.stringify(todo));
+const KEY = "todos_v1";
+
+export const saveTodoLocal = (todos) => {
+  localStorage.setItem(KEY, JSON.stringify(todos));
 };
 
-export const deleteTodoFromMemory = (id) => {
-  localStorage.removeItem(id);
-};
+export const loadTodoLocal = () => {
+  const raw = localStorage.getItem(KEY);
+ if(!raw) return [];
 
-export const loadTodoFromMemory = (todos) => {
-  todos.length = 0;
-  const length = localStorage.length;
-  for (let i = 0; i < length; i++) {
-    let key = localStorage.key(i);
-    const todo = JSON.parse(localStorage.getItem(key));
-    todos.push(todo);
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)? parsed : [];
+  }
+  catch{
+    return [];
   }
 };
-
-export const editTodoInMemory = (id,todo) =>{
-  localStorage.removeItem(id);
-  localStorage.setItem(JSON.stringify(id),JSON.stringify(todo));
-}

@@ -1,9 +1,6 @@
 export const renderUi = (todos, list) => {
   list.innerHTML = "";
 
-  //sorting the todos before rendering
-  todos.sort((a, b) => a.createdAt - b.createdAt);
-
   for (let i = 0; i < todos.length; i++) {
     const li = document.createElement("li");
 
