@@ -15,3 +15,8 @@ export const loadTodoFromMemory = (todos) => {
     todos.push(todo);
   }
 };
+
+export const editTodoInMemory = (id,todo) =>{
+  localStorage.removeItem(id);
+  localStorage.setItem(JSON.stringify(id),JSON.stringify(todo));
+}

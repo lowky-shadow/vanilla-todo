@@ -1,5 +1,5 @@
 import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js";
-import { deleteTodoFromMemory, storeTodoInMemory } from "./storage.js";
+import { deleteTodoFromMemory, editTodoInMemory, storeTodoInMemory } from "./storage.js";
 
 export const addTodo = (todos, input) => {
   const todo = {
@@ -23,10 +23,13 @@ export const editTodo = (todos,idToEdit,input) =>{
   return todos.map((todo) =>{
     if(todo.id !== idToEdit) return todo;
 
-    return {
+    const newTodo = {
       ...todo,
-      text:input,
-      editing:false,
-    }
+      text: input,
+      editing: false,
+    };
+
+    editTodoInMemory(idToEdit,newTodo);
+    return newTodo;
   })
 }
