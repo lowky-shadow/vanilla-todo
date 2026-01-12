@@ -13,20 +13,25 @@
     </header>
 
     <main>
-      
-      <form  id="form">
-        
+      <form id="form">
         <!-- no server , handled by js -->
         <!-- action="/submit" method="post"  -->
-         
+
         <label for="todo-input"></label>
-        <input type="text" name="todo" id="todo-input" required autofocus />
+        <input type="text" name="todo" id="todo-input"
+        placeholder="Add todo" required autofocus />
         <button type="submit">Submit</button>
       </form>
     </main>
-    <ul id="todo-selector">
-     
-    </ul>
+
+    <input
+      type="text"
+      id="search"
+      placeholder="Search todos"
+      aria-label="Search todos"
+    />
+
+    <ul id="todo-selector"></ul>
 
     <footer>This is footer yes</footer>
 

@@ -1,12 +1,16 @@
 import { renderUi } from "./renderUi.js";
 import {  loadTodoLocal, saveTodoLocal } from "./storage.js";
 import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
+import { debounce } from "./utils.js";
 
 const main = async () => {
   let todos = [];
+  let searchTerm = "";
+
 
   let list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
+  const searchInput = document.querySelector("#search");
 
   //load todos from localstorage
   todos = loadTodoLocal();
@@ -14,8 +18,14 @@ const main = async () => {
   //sorting the todos before rendering
   todos.sort((a, b) => a.createdAt - b.createdAt);
   
+  const getVisibleTodos = () => {
+    return todos.filter((todo) =>
+      todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   const callRenderUi = () => {
-    renderUi(todos, list);
+    renderUi(getVisibleTodos(), list);
   };
   callRenderUi();
 
@@ -71,5 +81,16 @@ const main = async () => {
     callRenderUi();
     e.target.reset();
   });
-};;
+
+  const handleSearch = debounce((value) => {
+    searchTerm = value;
+    callRenderUi();
+  }, 500);
+
+  searchInput.addEventListener("input", (e) => {
+    handleSearch(e.target.value);
+  });
+  
+};
+
 main();
