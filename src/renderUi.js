@@ -1,4 +1,4 @@
-export const renderUi = (todos, list) => {
+export const renderUi = ({todos, list,isLoading,errorMessage}) => {
   list.innerHTML = "";
 
   for (let i = 0; i < todos.length; i++) {
@@ -8,6 +8,7 @@ export const renderUi = (todos, list) => {
       const inputbox = document.createElement("input");
       inputbox.dataset.id = todos[i].id;
       inputbox.value = todos[i].text;
+      inputbox.disabled = isLoading;
 
       inputbox.setAttribute("aria-label", "Edit todo text");
       inputbox.setAttribute("aria-live", "polite");
@@ -24,6 +25,7 @@ export const renderUi = (todos, list) => {
       deleteButton.textContent = "delete";
       deleteButton.setAttribute("class", "delete");
       deleteButton.setAttribute("aria-label", `Delete todo: ${todos[i].text}`);
+      deleteButton.disabled = isLoading;
 
       deleteButton.dataset.id = todos[i].id;
 
@@ -32,6 +34,7 @@ export const renderUi = (todos, list) => {
       editButton.dataset.id = todos[i].id;
       editButton.setAttribute("class", "edit");
       editButton.setAttribute("aria-label", `Edit todo: ${todos[i].text}`);
+      editButton.disabled = isLoading;
 
       li.appendChild(deleteButton);
       li.appendChild(editButton);
@@ -39,4 +42,7 @@ export const renderUi = (todos, list) => {
 
     list.appendChild(li);
   }
+
+   const status = document.querySelector("#status");
+   status.textContent = isLoading ? "isLoading" : errorMessage || "";
 };

@@ -14,3 +14,7 @@ li {
   background-color: red;
   padding: 6px;
 }
+
+#status {
+  background-color: red;
+}

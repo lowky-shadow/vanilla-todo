@@ -1,5 +1,6 @@
+import { api } from "./api.js";
 import { renderUi } from "./renderUi.js";
-import {  loadTodoLocal, saveTodoLocal } from "./storage.js";
+import { loadTodoLocal, saveTodoLocal } from "./storage.js";
 import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
 import { debounce } from "./utils.js";
 
@@ -7,41 +8,53 @@ const main = async () => {
   let todos = [];
   let searchTerm = "";
 
+  let isLoading = false;
+  let errorMessage = "";
 
-  let list = document.querySelector("#todo-selector");
+  const list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
   const searchInput = document.querySelector("#search");
 
-  //load todos from localstorage
-  todos = loadTodoLocal();
+  //load todos from localstorage and sort them before rendering
+  todos = loadTodoLocal().sort((a, b) => a.createdAt - b.createdAt);
 
-  //sorting the todos before rendering
-  todos.sort((a, b) => a.createdAt - b.createdAt);
-  
   const getVisibleTodos = () => {
     return todos.filter((todo) =>
       todo.text.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
-  const callRenderUi = () => {
-    renderUi(getVisibleTodos(), list);
+  const render = () => {
+    renderUi({ todos: getVisibleTodos(), list, isLoading, errorMessage });
   };
-  callRenderUi();
+  render();
 
-  list.addEventListener("click", (e) => {
-    if (e.target.tagName !== "BUTTON") return;
+  //delete and edit TODO
+  list.addEventListener("click",async (e) => {
+    if (e.target.tagName !== "BUTTON" || isLoading) return;
+
+    const id = e.target.dataset.id;
 
     if (e.target.classList.contains("delete")) {
-      const idToDelete = e.target.dataset.id;
-      todos = deleteTodo(todos, idToDelete);
+      isLoading = true;
+      errorMessage = "";
+      render();
+      try {
+        await api.deleteTodo(id);
+        todos = deleteTodo(todos, id);
+        saveTodoLocal(todos);
+      } catch (err) {
+        errorMessage = err.message;
+      }
+      finally{
+        isLoading = false;
+        render();
+      }
+    }
 
-      //saving todos local after delete
-      saveTodoLocal(todos);
-    } else if (e.target.classList.contains("edit")) {
-      const idToEdit = e.target.dataset.id;
-
-      const todo = todos.find((t) => t.id === idToEdit);
+    if (e.target.classList.contains("edit")) {
+    
+      const todo = todos.find((t) => t.id === id);
       todos.forEach((t) => (t.editing = false));
       if (todo) {
         todo.editing = true;
@@ -49,48 +62,61 @@ const main = async () => {
     } else {
       return;
     }
-    callRenderUi();
+    render();
   });
 
+  //edit todo
   list.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
 
     const idToEdit = e.target.dataset.id;
     const editInput = e.target.value.trim();
+
     if (!editInput) return;
 
     todos = editTodo(todos, idToEdit, editInput);
-
-    //save todos locally after edit
     saveTodoLocal(todos);
-    callRenderUi();
+    render();
   });
 
-  form.addEventListener("submit", (e) => {
+
+  //add todo
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isLoading) return;
     const input = e.target.todo.value.trim();
+    if (!input) return;
 
-    if (input.length > 20) {
-      alert("Todo must be less than 20 characters");
-      return;
+    isLoading = true;
+    errorMessage = "";
+    render();
+
+    try {
+      if (input.length > 20) {
+        alert("Todo must be less than 20 characters");
+        return;
+      }
+      await api.addTodo(input);
+      addTodo(todos, input);
+      saveTodoLocal(todos);
+      
+    } catch (err) {
+      errorMessage = err.message;
+    } finally {
+      isLoading = false;
+      e.target.reset();
+      render();
     }
-    addTodo(todos, input);
-
-    //save todos locally after new todo
-    saveTodoLocal(todos);
-    callRenderUi();
-    e.target.reset();
   });
 
   const handleSearch = debounce((value) => {
     searchTerm = value;
-    callRenderUi();
+    render();
   }, 500);
 
   searchInput.addEventListener("input", (e) => {
     handleSearch(e.target.value);
   });
-  
 };
 
 main();
