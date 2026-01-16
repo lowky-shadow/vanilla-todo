@@ -3,8 +3,9 @@ const randomDelay = ()=>{
 }
 
 const maybeFail = ()=>{
-  if(Math.random() < 0.2)
-    throw new Error("Network Error");
+  if(Math.random() > 0.2)
+    return Promise.reject(new Error("Network Error"));
+
 };
 
 

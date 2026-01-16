@@ -1,5 +1,6 @@
 import { api } from "./api.js";
 import { renderUi } from "./renderUi.js";
+import { retryWithBackoff } from "./retryWithBackoff.js";
 import { loadTodoLocal, saveTodoLocal } from "./storage.js";
 import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
 import { debounce } from "./utils.js";
@@ -96,7 +97,7 @@ const main = async () => {
         alert("Todo must be less than 20 characters");
         return;
       }
-      await api.addTodo(input);
+      await retryWithBackoff(async () => await api.addTodo(input));
       addTodo(todos, input);
       saveTodoLocal(todos);
       
