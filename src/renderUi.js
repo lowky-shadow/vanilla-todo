@@ -3,7 +3,7 @@ export const renderUi = ({todos, list,isLoading,errorMessage}) => {
 
   for (let i = 0; i < todos.length; i++) {
     const li = document.createElement("li");
-
+    li.dataset.id = todos[i].id;
     if (todos[i].editing === true) {
       const inputbox = document.createElement("input");
       inputbox.dataset.id = todos[i].id;
@@ -11,7 +11,6 @@ export const renderUi = ({todos, list,isLoading,errorMessage}) => {
       inputbox.disabled = isLoading;
 
       inputbox.setAttribute("aria-label", "Edit todo text");
-      inputbox.setAttribute("aria-live", "polite");
 
       li.appendChild(inputbox);
       setTimeout(() => {
@@ -39,6 +38,7 @@ export const renderUi = ({todos, list,isLoading,errorMessage}) => {
       li.appendChild(deleteButton);
       li.appendChild(editButton);
     }
+    li.setAttribute("tabindex", "0");
 
     list.appendChild(li);
   }

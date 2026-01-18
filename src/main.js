@@ -12,6 +12,9 @@ const main = async () => {
   let isLoading = false;
   let errorMessage = "";
 
+  let lastFocusedTodoId = null;
+
+
   const list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
   const searchInput = document.querySelector("#search");
@@ -30,6 +33,15 @@ const main = async () => {
   };
   render();
 
+  const announce = (message) => {
+    const region = document.querySelector("#sr-status");
+    region.textContent = "";
+    setTimeout(() => {
+      region.textContent = message;
+    }, 10);
+  };
+
+
   //delete and edit TODO
   list.addEventListener("click",async (e) => {
     if (e.target.tagName !== "BUTTON" || isLoading) return;
@@ -44,6 +56,8 @@ const main = async () => {
         await api.deleteTodo(id);
         todos = deleteTodo(todos, id);
         saveTodoLocal(todos);
+        announce("Todo deleted");
+
       } catch (err) {
         errorMessage = err.message;
       }
@@ -54,21 +68,44 @@ const main = async () => {
     }
 
     if (e.target.classList.contains("edit")) {
-    
       const todo = todos.find((t) => t.id === id);
       todos.forEach((t) => (t.editing = false));
-      if (todo) {
-        todo.editing = true;
-      }
-    } else {
-      return;
+      lastFocusedTodoId = id; // the todo being edited
+      todo.editing = true;
+      announce("Editing todo");
     }
     render();
   });
 
+  const restoreFocus = () => {
+    if (lastFocusedTodoId == null) return;
+
+    setTimeout(() => {
+      const li = document.querySelector(`li[data-id="${lastFocusedTodoId}"]`);
+      li?.focus();
+      lastFocusedTodoId = null;
+    }, 0);
+  };
+
+
   //edit todo
   list.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
+    if (e.target.tagName !== "INPUT") return;
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key !== "Enter" && e.key !== "Escape") return;
+
+    if (e.key === "Escape") {
+      todos = todos.map((t) => ({ ...t, editing: false }));
+      render();
+      restoreFocus();
+      announce("Edit canceled");
+    }
+
 
     const idToEdit = e.target.dataset.id;
     const editInput = e.target.value.trim();
@@ -78,6 +115,7 @@ const main = async () => {
     todos = editTodo(todos, idToEdit, editInput);
     saveTodoLocal(todos);
     render();
+    restoreFocus();
   });
 
 
@@ -93,10 +131,6 @@ const main = async () => {
     render();
 
     try {
-      if (input.length > 20) {
-        alert("Todo must be less than 20 characters");
-        return;
-      }
       await retryWithBackoff(async () => await api.addTodo(input));
       addTodo(todos, input);
       saveTodoLocal(todos);
