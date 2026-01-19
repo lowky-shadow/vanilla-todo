@@ -2,7 +2,7 @@ import { api } from "./api.js";
 import { renderUi } from "./renderUi.js";
 import { retryWithBackoff } from "./retryWithBackoff.js";
 import { loadTodoLocal, saveTodoLocal } from "./storage.js";
-import { addTodo, deleteTodo, editTodo } from "./todoLogic.js";
+import { addTodo, deleteTodo, editTodo, toggle } from "./todoLogic.js";
 import { debounce } from "./utils.js";
 
 const main = async () => {
@@ -13,7 +13,7 @@ const main = async () => {
   let errorMessage = "";
 
   let lastFocusedTodoId = null;
-
+  let activeFilter = "all";
 
   const list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
@@ -23,10 +23,25 @@ const main = async () => {
   todos = loadTodoLocal().sort((a, b) => a.createdAt - b.createdAt);
 
   const getVisibleTodos = () => {
-    return todos.filter((todo) =>
-      todo.text.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let result = todos;
+
+    if (activeFilter === "pending") {
+      result = result.filter((todo) => !todo.completed);
+    }
+
+    if (activeFilter === "completed") {
+      result = result.filter((todo) => todo.completed);
+    }
+
+    if (searchTerm) {
+      result = result.filter((todo) =>
+        todo.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return result;
   };
+
 
   const render = () => {
     renderUi({ todos: getVisibleTodos(), list, isLoading, errorMessage });
@@ -134,7 +149,6 @@ const main = async () => {
       await retryWithBackoff(async () => await api.addTodo(input));
       addTodo(todos, input);
       saveTodoLocal(todos);
-      
     } catch (err) {
       errorMessage = err.message;
     } finally {
@@ -151,6 +165,23 @@ const main = async () => {
 
   searchInput.addEventListener("input", (e) => {
     handleSearch(e.target.value);
+  });
+
+  //checkbox logic
+  list.addEventListener("change",(e)=>{
+    if(e.target.type !== "checkbox") return;
+    todos = toggle(todos,e.target.dataset.id);
+    saveTodoLocal(todos);
+  })
+
+  //filter logic
+  const filters = document.getElementById("filters");
+
+  filters.addEventListener("change", (e) => {
+    if (!e.target.name === "filter") return;
+
+    activeFilter = e.target.value;
+    render();
   });
 };
 

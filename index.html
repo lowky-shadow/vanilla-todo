@@ -18,8 +18,14 @@
         <!-- action="/submit" method="post"  -->
 
         <label for="todo-input"></label>
-        <input type="text" name="todo" id="todo-input"
-        placeholder="Add todo" required autofocus />
+        <input
+          type="text"
+          name="todo"
+          id="todo-input"
+          placeholder="Add todo"
+          required
+          autofocus
+        />
         <button type="submit">Submit</button>
       </form>
     </main>
@@ -31,16 +37,31 @@
       aria-label="Search todos"
     />
 
+    <div id="filters">
+      <input type="radio" id="filter-all" name="filter" value="all" checked />
+      <label for="filter-all">All</label>
+
+      <input
+        type="radio"
+        id="filter-completed"
+        name="filter"
+        value="completed"
+      />
+      <label for="filter-completed">Completed</label>
+
+      <input type="radio" id="filter-pending" name="filter" value="pending" />
+      <label for="filter-pending">Not completed</label>
+    </div>
+
     <ul id="todo-selector"></ul>
 
     <footer>This is footer yes</footer>
     <div id="status" aria-live="polite"></div>
     <div
-  id="sr-status"
-  aria-live="polite"
-  style="position:absolute; left:-9999px;"
-></div>
-
+      id="sr-status"
+      aria-live="polite"
+      style="position: absolute; left: -9999px"
+    ></div>
 
     <script type="module" src="./src/main.js"></script>
   </body>

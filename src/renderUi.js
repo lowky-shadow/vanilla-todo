@@ -4,6 +4,15 @@ export const renderUi = ({todos, list,isLoading,errorMessage}) => {
   for (let i = 0; i < todos.length; i++) {
     const li = document.createElement("li");
     li.dataset.id = todos[i].id;
+
+    //checkbox
+    let checkbox = document.createElement("input");
+    checkbox.setAttribute("class","checkbox");
+    checkbox.type = "checkbox";
+    checkbox.checked = todos[i].completed;
+    checkbox.dataset.id = todos[i].id;
+    li.appendChild(checkbox);
+
     if (todos[i].editing === true) {
       const inputbox = document.createElement("input");
       inputbox.dataset.id = todos[i].id;
@@ -18,7 +27,9 @@ export const renderUi = ({todos, list,isLoading,errorMessage}) => {
         inputbox.setSelectionRange(inputbox.value.length, inputbox.value.length);
       }, 0);
     } else {
-      li.textContent = todos[i].text + " ";
+      const span = document.createElement("span");
+      span.innerHTML = todos[i].text + " ";
+      li.appendChild(span);
 
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "delete";
