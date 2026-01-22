@@ -45,6 +45,7 @@ const main = async () => {
 
   const render = () => {
     renderUi({ todos: getVisibleTodos(), list, isLoading, errorMessage });
+    saveTodoLocal(todos);
   };
   render();
 
@@ -183,6 +184,16 @@ const main = async () => {
     activeFilter = e.target.value;
     render();
   });
+
+  //clear completed
+  const clearCompletedBtn = document.querySelector("#clear-completed");
+
+  clearCompletedBtn.addEventListener("click", () => {
+    todos = todos.filter((todo) => !todo.completed);
+
+    render();
+  });
+
 };
 
 main();
