@@ -1,6 +1,6 @@
 import { api } from "./api.js";
 import { renderUi } from "./renderUi.js";
-import { retryWithBackoff } from "./retryWithBackoff.js";
+// import { retryWithBackoff } from "./retryWithBackoff.js";
 import { loadTodoLocal, saveTodoLocal } from "./storage.js";
 import { addTodo, deleteTodo, editTodo, toggle } from "./todoLogic.js";
 import { debounce } from "./utils.js";
@@ -14,6 +14,13 @@ const main = async () => {
 
   let lastFocusedTodoId = null;
   let activeFilter = "all";
+
+  let actionStack = [];
+  let undoTimeoutId = null;
+
+  const UNDO_WINDOW_MS = 8000;
+  const MAX_ACTIONS = 10;
+
 
   const list = document.querySelector("#todo-selector");
   const form = document.querySelector("#form");
@@ -65,12 +72,18 @@ const main = async () => {
     const id = e.target.dataset.id;
 
     if (e.target.classList.contains("delete")) {
+      const index = todos.findIndex((t) => t.id === id);
+      const todo = todos[index]; // FIX: capture BEFORE delete
+
       isLoading = true;
       errorMessage = "";
       render();
       try {
         await api.deleteTodo(id);
         todos = deleteTodo(todos, id);
+
+        pushAction({ type: "DELETE", todo, index });
+
         saveTodoLocal(todos);
         announce("Todo deleted");
 
@@ -147,11 +160,14 @@ const main = async () => {
     render();
 
     try {
-      await retryWithBackoff(async () => await api.addTodo(input));
+      // await retryWithBackoff(async () => await api.addTodo(input));
       addTodo(todos, input);
+      const todo = todos[todos.length-1];
+      pushAction({ type: "ADD", todo });
       saveTodoLocal(todos);
     } catch (err) {
       errorMessage = err.message;
+      console.log(err);
     } finally {
       isLoading = false;
       e.target.reset();
@@ -189,10 +205,77 @@ const main = async () => {
   const clearCompletedBtn = document.querySelector("#clear-completed");
 
   clearCompletedBtn.addEventListener("click", () => {
+    const removed = todos.filter((t) => t.completed);
     todos = todos.filter((todo) => !todo.completed);
+    if (removed.length === 0) return;
 
+     pushAction({ type: "CLEAR_COMPLETED", todos: removed });
+     todos = todos.filter((t) => !t.completed);
+     
     render();
   });
+
+  //undo
+  const undoBtn = document.querySelector("#undo");
+
+  const undoLastAction = () => {
+    const action = actionStack.pop();
+    if (!action) return;
+
+    switch (action.type) {
+      case "ADD": {
+        todos = todos.filter((todo) => todo.id !== action.todo.id);
+        break;
+      }
+
+      case "DELETE": {
+        todos.splice(action.index, 0, action.todo);
+        break;
+      }
+
+      case "CLEAR_COMPLETED": {
+        todos = [...todos, ...action.todos].sort(
+          (a, b) => a.createdAt - b.createdAt
+        );
+        break;
+      }
+    }
+
+    render();
+    updateUndoUI();
+  };
+
+
+  undoBtn.addEventListener("click", () => {
+    undoLastAction();
+  });
+
+
+  //undo helpers
+  const pushAction = (action) => {
+    actionStack.push(action);
+
+    if (actionStack.length > MAX_ACTIONS) {
+      actionStack.shift();
+    }
+
+    resetUndoTimer();
+    updateUndoUI();
+  };
+
+  const resetUndoTimer = () => {
+    clearTimeout(undoTimeoutId);
+
+    undoTimeoutId = setTimeout(() => {
+      actionStack = [];
+      updateUndoUI();
+    }, UNDO_WINDOW_MS);
+  };
+
+  const updateUndoUI = () => {
+    undoBtn.disabled = actionStack.length === 0;
+  };
+
 
 };
 

@@ -1,6 +1,8 @@
 import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js";
 
 export const addTodo = (todos, input) => {
+  // if(input.length > 5) 
+  //   throw new Error("input too long");
   const todo = {
     id: nanoid(),
     text: input,
